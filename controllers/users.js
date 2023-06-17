@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const User = require('../models/users');
 
 module.exports.getUsers = (req, res) => User.find({})
@@ -7,14 +8,19 @@ module.exports.getUsers = (req, res) => User.find({})
 module.exports.getUsersId = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-    // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user) {
         return res.status(404).send({ message: 'User not found' });
       }
       res.status(200).send({ data: user });
     })
-    .catch(() => res.status(500).send({ message: 'Error Server' }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Validation Error' });
+        return;
+      }
+      res.status(500).send({ message: 'Error Server' });
+    });
 };
 
 module.exports.createUser = (req, res) => {
@@ -31,9 +37,14 @@ module.exports.updateProfileUser = (req, res) => {
   const userId = req.user._id;
   const { name, about } = req.body;
   User.findByIdAndUpdate(userId, { name, about })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => {
+      if (!user) {
+        return res.status(400).send({ message: 'User not found' });
+      }
+      res.status(200).send({ data: user });
+    })
     .catch((err) => {
-      if (err.name === 'ValidationError') { return res.status(400).send({ message: 'Error Data' }); }
+      if (err.name === 'ValidationError') { return res.status(400).send({ message: 'Validation Error' }); }
       return res.status(500).send({ message: 'Error Server' });
     });
 };
