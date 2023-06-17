@@ -30,6 +30,9 @@ app.use((req, res, next) => {
 
 app.use(userRoutes);
 app.use(cardRoutes);
+app.use((req, res) => {
+  res.status(500).send({ message: 'Error Server'});
+});
 
 app.listen(PORT, () => {
   console.log(`listening on ${PORT}`);
