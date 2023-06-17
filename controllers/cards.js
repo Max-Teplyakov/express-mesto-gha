@@ -3,7 +3,7 @@ const Card = require('../models/cards');
 module.exports.createCard = (req, res) => {
   const cardData = req.body;
 
-  return Card.create(cardData)
+  Card.create(cardData)
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') { return res.status(400).send({ message: 'Error Data' }); }
@@ -18,7 +18,7 @@ module.exports.getCards = (req, res) => Card.find({})
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
 
-  return Card.findByIdAndRemove(cardId)
+  Card.findByIdAndRemove(cardId)
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') { return res.status(404).send({ message: 'Card not found' }); }
