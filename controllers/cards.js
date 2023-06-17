@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 const Card = require('../models/cards');
 
 module.exports.createCard = (req, res) => {
@@ -32,7 +33,7 @@ module.exports.deleteCard = (req, res) => {
       res.status(200).send({ data: card });
     })
     .catch((err) => {
-      if (err.name === 'CastError') { return res.status(400).send({ message: 'Card not found' }); }
+      if (err.name === 'CastError') { return res.status(400).send({ message: 'Error Data' }); }
       return res.status(500).send({ message: 'Error Server' });
     });
 };
@@ -44,12 +45,12 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      return res.status(400).send({ message: 'Card not found' });
+      return res.status(404).send({ message: 'Card not found' });
     }
     res.send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'CastError') { return res.status(404).send({ message: 'Card not found' }); }
+    if (err.name === 'CastError') { return res.status(400).send({ message: 'Error Data' }); }
     return res.status(500).send({ message: 'Error Server' });
   });
 
@@ -59,9 +60,12 @@ module.exports.disLikeCard = (req, res) => Card.findByIdAndUpdate(
   { new: true },
 )
   .then((card) => {
+    if (!card) {
+      return res.status(404).send({ message: 'Card not found' });
+    }
     res.send({ data: card });
   })
   .catch((err) => {
-    if (err.name === 'CastError') { return res.status(404).send({ message: 'Card not found' }); }
+    if (err.name === 'CastError') { return res.status(400).send({ message: 'Error Data' }); }
     return res.status(500).send({ message: 'Error Server' });
   });
