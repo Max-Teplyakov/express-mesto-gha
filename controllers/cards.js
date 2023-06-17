@@ -1,10 +1,16 @@
 const Card = require('../models/cards');
 
 module.exports.createCard = (req, res) => {
-  const cardData = req.body;
+  const { name, link } = req.body;
 
-  Card.create(cardData)
-    .then((card) => res.status(200).send({ data: card }))
+  Card.create({ name, link, owner: req.user._id })
+    // eslint-disable-next-line consistent-return
+    .then((card) => {
+      if (!card) {
+        return res.status(404).send({ message: 'Card not found' });
+      }
+      res.status(200).send({ data: card });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') { return res.status(400).send({ message: 'Error Data' }); }
       return res.status(500).send({ message: 'Error Server' });

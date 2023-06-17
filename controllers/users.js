@@ -36,10 +36,10 @@ module.exports.createUser = (req, res) => {
 module.exports.updateProfileUser = (req, res) => {
   const userId = req.user._id;
   const { name, about } = req.body;
-  User.findByIdAndUpdate(userId, { name, about })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true, upsert: true })
     .then((user) => {
       if (!user) {
-        return res.status(400).send({ message: 'User not found' });
+        return res.status(404).send({ message: 'User not found' });
       }
       res.status(200).send({ data: user });
     })
@@ -52,8 +52,13 @@ module.exports.updateProfileUser = (req, res) => {
 module.exports.updateAvatarUser = (req, res) => {
   const userId = req.user._id;
   const { avatar } = req.body;
-  User.findByIdAndUpdate(userId, { avatar })
-    .then((user) => res.status(200).send({ data: user }))
+  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true, upsert: true })
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send({ message: 'User not found' });
+      }
+      res.status(200).send({ data: user });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') { return res.status(400).send({ message: 'Error Data' }); }
       return res.status(500).send({ message: 'Error Server' });
