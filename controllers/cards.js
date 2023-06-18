@@ -2,7 +2,7 @@ const {
   ERROR_VALIDATION,
   ERROR_NOT_FOUND,
   ERROR_SERVER,
-} = require('util');
+} = require('../utils/utils');
 
 /* eslint-disable consistent-return */
 const Card = require('../models/cards');
