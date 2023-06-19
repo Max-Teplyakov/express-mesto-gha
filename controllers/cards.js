@@ -2,6 +2,7 @@ const {
   ERROR_VALIDATION,
   ERROR_NOT_FOUND,
   ERROR_SERVER,
+  OK_SERVER,
 } = require('../utils/utils');
 
 /* eslint-disable consistent-return */
@@ -11,7 +12,7 @@ module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => res.status(OK_SERVER).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') { return res.status(ERROR_VALIDATION).send({ message: 'Error Data' }); }
       return res.status(ERROR_SERVER).send({ message: 'Error Server' });
@@ -19,7 +20,7 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.getCards = (req, res) => Card.find({})
-  .then((card) => res.status(200).send({ data: card }))
+  .then((card) => res.status(OK_SERVER).send({ data: card }))
   .catch(() => res.status(ERROR_SERVER).send({ message: 'Error Server' }));
 
 module.exports.deleteCard = (req, res) => {
@@ -30,7 +31,7 @@ module.exports.deleteCard = (req, res) => {
       if (!card) {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Card not found' });
       }
-      res.status(200).send({ data: card });
+      res.status(OK_SERVER).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') { return res.status(ERROR_VALIDATION).send({ message: 'Error Data' }); }
