@@ -6,12 +6,14 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/users');
 const {
   ERROR_VALIDATION,
-  ERROR_NOT_FOUND,
   ERROR_SERVER,
   OK_SERVER,
 } = require('../utils/utils');
 
-module.exports.login = (req, res) => {
+const NotFoundError = require('../errors/NotFoundError');
+const ValidationError = require('../errors/ValidationError');
+
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   User.findUserByCredentials(email, password)
@@ -21,14 +23,10 @@ module.exports.login = (req, res) => {
       // вернём токен
       res.send({ token });
     })
-    .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message });
-    });
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -38,7 +36,7 @@ module.exports.createUser = (req, res) => {
     }))
     .then((user) => res.status(OK_SERVER).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') { return res.status(ERROR_VALIDATION).send({ message: 'Error Data' }); }
+      if (err.name === 'ValidationError') { return next(new ValidationError('Error Data')); }
       return res.status(ERROR_SERVER).send({ message: 'Error Server' });
     });
 };
@@ -47,60 +45,53 @@ module.exports.getUsers = (req, res) => User.find({})
   .then((user) => res.status(OK_SERVER).send({ data: user }))
   .catch(() => res.status(ERROR_SERVER).send({ message: 'Error Server' }));
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'User not found' });
+        throw new NotFoundError('User not found');
       }
       res.status(OK_SERVER).send({ data: user });
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(ERROR_VALIDATION).send({ message: 'Validation Error' });
-        return;
-      }
-      res.status(ERROR_SERVER).send({ message: 'Error Server' });
-    });
+    .catch(next);
 };
 
-module.exports.getUsersId = (req, res) => {
+module.exports.getUsersId = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'User not found' });
+        throw new NotFoundError('User not found');
       }
       res.status(OK_SERVER).send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_VALIDATION).send({ message: 'Validation Error' });
-        return;
+        return next(new ValidationError('Incorrect ID'));
       }
-      res.status(ERROR_SERVER).send({ message: 'Error Server' });
+      return next(err);
     });
 };
 
-module.exports.updateProfileUser = (req, res) => {
+module.exports.updateProfileUser = (req, res, next) => {
   const userId = req.user._id;
   const { name, about } = req.body;
   User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => res.status(OK_SERVER).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') { return res.status(ERROR_VALIDATION).send({ message: 'Validation Error' }); }
-      return res.status(ERROR_SERVER).send({ message: 'Error Server' });
+      return next(err);
     });
 };
 
-module.exports.updateAvatarUser = (req, res) => {
+module.exports.updateAvatarUser = (req, res, next) => {
   const userId = req.user._id;
   const { avatar } = req.body;
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     .then((user) => res.status(OK_SERVER).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') { return res.status(ERROR_VALIDATION).send({ message: 'Error Data' }); }
-      return res.status(ERROR_SERVER).send({ message: 'Error Server' });
+      if (err.name === 'ValidationError') { return next(new ValidationError('Incorrect ID')); }
+      return next(err);
     });
 };
