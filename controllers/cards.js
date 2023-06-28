@@ -10,8 +10,9 @@ const Card = require('../models/cards');
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
+  const userId = req.user._id;
 
-  Card.create({ name, link, owner: req.user._id })
+  Card.create({ name, link, owner: userId })
     .then((card) => res.status(OK_SERVER).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') { return res.status(ERROR_VALIDATION).send({ message: 'Error Data' }); }
@@ -30,6 +31,9 @@ module.exports.deleteCard = (req, res) => {
     .then((card) => {
       if (!card) {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Card not found' });
+      }
+      if (card.owner.toString() !== req.user._id) {
+        return res.status(ERROR_NOT_FOUND).send({ message: 'You have no rights' });
       }
       res.status(OK_SERVER).send({ data: card });
     })
