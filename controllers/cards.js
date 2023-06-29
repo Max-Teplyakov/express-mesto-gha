@@ -1,10 +1,10 @@
 const {
-  ERROR_NOT_FOUND,
   OK_SERVER,
 } = require('../utils/utils');
 
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 /* eslint-disable consistent-return */
 const Card = require('../models/cards');
@@ -32,7 +32,7 @@ module.exports.deleteCard = (req, res, next) => {
         throw new NotFoundError('Card not found');
       }
       if (card.owner.toString() !== req.user._id) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'You have no rights' });
+        throw new ForbiddenError('You have no rights');
       }
       res.status(OK_SERVER).send({ data: card });
     })
