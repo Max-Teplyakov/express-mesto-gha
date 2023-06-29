@@ -13,7 +13,6 @@ const {
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
 const ConflictError = require('../errors/ConflictError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
@@ -23,10 +22,7 @@ module.exports.login = (req, res, next) => {
     // создадим токен
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
       // вернём токен
-      if (!user) {
-        throw new UnauthorizedError('Error Data');
-      }
-      res.send({ token, password });
+      res.send({ token });
     })
     .catch(next);
 };
@@ -39,7 +35,11 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((user) => res.status(OK_SERVER).send({ data: user }))
+    .then((user) => {
+      const UserDeletePassword = user.toObject();
+      delete UserDeletePassword.password;
+      res.status(OK_SERVER).send({ data: UserDeletePassword });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') { return next(new ValidationError('Error Data')); }
       if (err.code === 11000) { return next(new ConflictError('Email Already Exists')); }
