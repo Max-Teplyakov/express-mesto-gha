@@ -26,7 +26,7 @@ module.exports.login = (req, res, next) => {
       if (!user) {
         throw new UnauthorizedError('Error Data');
       }
-      res.send({ token });
+      res.send({ token, password });
     })
     .catch(next);
 };
