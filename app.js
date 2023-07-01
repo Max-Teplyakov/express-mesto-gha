@@ -4,12 +4,9 @@ const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
 
 const app = express();
-const userRoutes = require('./routes/users');
-const cardRoutes = require('./routes/cards');
+
 const auth = require('./middlewares/auth');
-const {
-  ERROR_NOT_FOUND,
-} = require('./utils/utils');
+const routes = require('./routes/index');
 const {
   createUser,
   login,
@@ -47,8 +44,7 @@ app.post('/signup', celebrate({
 
 app.use(auth);
 
-app.use('/users', userRoutes);
-app.use('/cards', cardRoutes);
+app.use(routes);
 
 app.use(errors());
 // eslint-disable-next-line no-unused-vars
@@ -64,10 +60,6 @@ app.use((err, req, res, next) => {
         ? 'На сервере произошла ошибка'
         : message,
     });
-});
-
-app.use((req, res) => {
-  res.status(ERROR_NOT_FOUND).send({ message: 'Error Server' });
 });
 
 app.listen(PORT, () => {
