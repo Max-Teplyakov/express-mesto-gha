@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
+const NotFoundError = require('./errors/NotFoundError');
 
 const app = express();
 
@@ -45,7 +46,9 @@ app.post('/signup', celebrate({
 app.use(auth);
 
 app.use(routes);
-
+app.use((req, res, next) => {
+  next(new NotFoundError('Error Server'));
+});
 app.use(errors());
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
