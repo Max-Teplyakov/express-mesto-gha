@@ -26,7 +26,7 @@ module.exports.getCards = (req, res, next) => Card.find({})
 
 module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Card not found');
@@ -34,7 +34,10 @@ module.exports.deleteCard = (req, res, next) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('You have no rights');
       }
-      res.status(OK_SERVER).send({ data: card });
+      Card.findByIdAndRemove(cardId)
+        .then((user) => {
+          res.status(OK_SERVER).send({ data: user });
+        });
     })
     .catch((err) => {
       if (err.name === 'CastError') { return next(new ValidationError('Error Data')); }

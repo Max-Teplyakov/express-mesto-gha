@@ -95,7 +95,7 @@ module.exports.updateAvatarUser = (req, res, next) => {
   User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     .then((user) => res.status(OK_SERVER).send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') { return next(new ValidationError('Incorrect ID')); }
+      if (err.name === 'ValidationError') { return next(new ValidationError('Data is not corected')); }
       return next(err);
     });
 };
